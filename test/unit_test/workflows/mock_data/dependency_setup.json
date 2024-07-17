@@ -31,6 +31,18 @@
             }
         }
     },
+    "data_configs": [
+        {
+            "name": "latency_data_config",
+            "user_script": "user_script.py",
+            "load_dataset_config": {
+                "params": {
+                    "data_dir": "azureml://subscriptions/test/resourcegroups/test/workspaces/test/datastores/test/test/cifar-10-batches-py"
+                }
+            },
+            "dataloader_config": { "params": { "batch_size": 16 } }
+        }
+    ],
     "evaluators": {
         "common_evaluator": {
             "metrics": [
@@ -51,17 +63,20 @@
                     ],
                     "user_config": {
                         "user_script": "user_script.py",
-                        "data_dir": {
-                            "type": "azureml_datastore",
-                            "config": { "datastore_name": "my_datastore", "relative_path": "data" }
-                        },
                         "evaluate_func": "eval_accuracy",
-                        "batch_size": 16
+                        "evaluate_func_kwargs": {
+                            "batch_size": 16,
+                            "data_dir": {
+                                "type": "azureml_datastore",
+                                "config": { "datastore_name": "my_datastore", "relative_path": "data" }
+                            }
+                        }
                     }
                 },
                 {
                     "name": "latency",
                     "type": "latency",
+                    "data_config": "latency_data_config",
                     "sub_types": [
                         {
                             "name": "avg",
@@ -71,13 +86,7 @@
                         },
                         { "name": "max" },
                         { "name": "min" }
-                    ],
-                    "user_config": {
-                        "user_script": "user_script.py",
-                        "data_dir": "azureml://subscriptions/test/resourcegroups/test/workspaces/test/datastores/test/test/cifar-10-batches-py",
-                        "dataloader_func": "create_dataloader",
-                        "batch_size": 16
-                    }
+                    ]
                 }
             ]
         }

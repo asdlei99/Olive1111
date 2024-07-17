@@ -26,18 +26,28 @@ class DependencySetupEnvBuilder(venv.EnvBuilder):
 
 @pytest.fixture()
 def config_json(tmp_path):
-    if platform.system() == OS.WINDOWS:
-        ep = "DmlExecutionProvider"
-    else:
-        ep = "CUDAExecutionProvider"
+    # create a user_script.py file in the tmp_path and refer to it
+    # this way the test can be run from any directory
+    tmp_path = Path(tmp_path)
+
+    user_script_py = tmp_path / "user_script.py"
+    with user_script_py.open("w") as f:
+        f.write("")
 
     with (Path(__file__).parent / "mock_data" / "dependency_setup.json").open() as f:
-        config = json.load(f)
-        config["systems"]["local_system"]["config"]["accelerators"][0]["execution_providers"] = [ep]
+        config_json = json.load(f)
+
+    for i in range(len(config_json["data_configs"])):
+        if "user_script" in config_json["data_configs"][i]:
+            config_json["data_configs"][i]["user_script"] = user_script_py.as_posix()
+
+    ep = ["DmlExecutionProvider" if platform.system() == OS.WINDOWS else "CUDAExecutionProvider"]
+    for i in range(len(config_json["systems"]["local_system"]["config"]["accelerators"])):
+        config_json["systems"]["local_system"]["config"]["accelerators"][i]["execution_providers"] = ep
 
     config_json_file = tmp_path / "config.json"
     with config_json_file.open("w") as f:
-        json.dump(config, f)
+        json.dump(config_json, f)
 
     return str(config_json_file)
 

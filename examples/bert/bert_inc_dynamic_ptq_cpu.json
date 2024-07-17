@@ -22,6 +22,7 @@
                     "max_samples": 100
                 }
             },
+            "post_process_data_config": { "type": "bert_post_process" },
             "dataloader_config": { "params": { "batch_size": 1 } }
         }
     ],
@@ -32,8 +33,7 @@
                     "name": "accuracy",
                     "type": "accuracy",
                     "data_config": "glue_mrpc",
-                    "sub_types": [ { "name": "accuracy_score", "priority": 1 } ],
-                    "user_config": { "post_processing_func": "post_process", "user_script": "user_script.py" }
+                    "sub_types": [ { "name": "accuracy_score", "priority": 1 } ]
                 },
                 {
                     "name": "latency",
