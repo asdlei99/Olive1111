@@ -8,7 +8,7 @@ from typing import Dict, List, Union
 
 from olive.auto_optimizer import AutoOptimizerConfig
 from olive.azureml.azureml_client import AzureMLClientConfig
-from olive.common.config_utils import ConfigBase, convert_configs_to_dicts, validate_config
+from olive.common.config_utils import NestedConfig, convert_configs_to_dicts, validate_config
 from olive.common.constants import DEFAULT_HF_TASK, DEFAULT_WORKFLOW_ID
 from olive.common.pydantic_v1 import Field, root_validator, validator
 from olive.common.utils import set_nested_dict_value
@@ -101,12 +101,14 @@ class RunEngineConfig(EngineConfig):
         return Engine(**config, azureml_client_config=azureml_client_config, workflow_id=workflow_id)
 
 
-class RunConfig(ConfigBase):
+class RunConfig(NestedConfig):
     """Run configuration for Olive workflow.
 
     This is the top-level configuration. It includes configurations for input model, systems, data,
     evaluators, engine, passes, and auto optimizer.
     """
+
+    _nested_field_name = "engine"
 
     workflow_id: str = Field(
         DEFAULT_WORKFLOW_ID, description="Workflow ID. If not provided, use the default ID 'default_workflow'."
@@ -333,13 +335,27 @@ def _needs_aml_client(config):
 
     config_type = config.get("type")
 
-    # AzureML resource path config without azureml_client
-    if config_type in AZUREML_RESOURCE_TYPES and not config.get("config", {}).get("azureml_client"):
-        return ("config", "azureml_client"), "AzureML Resource Path"
+    support_types = {
+        "AzureML Resource Path": {
+            "types": AZUREML_RESOURCE_TYPES,
+            "param": "azureml_client",
+        },
+        "AzureML System": {
+            "types": ["AzureML"],
+            "param": "azureml_client_config",
+        },
+    }
+    for type_name, type_info in support_types.items():
+        if config_type not in type_info["types"]:
+            continue
 
-    # AzureML system config without azureml_client_config
-    if config_type == "AzureML" and not config.get("config", {}).get("azureml_client_config"):
-        return ("config", "azureml_client_config"), "AzureML System"
+        # check if azureml_client is already provided
+        # it could be provided in the config or in the config's config
+        if config.get(type_info["param"]) or config.get("config", {}).get(type_info["param"]):
+            return None, None
+
+        # will directly insert azureml_client into the config
+        return (type_info["param"],), type_name
 
     return None, None
 
@@ -428,15 +444,18 @@ def _auto_fill_data_config(config, info, config_names, param_names, only_none=Fa
     :param info: model info
     :param config_names: list of config names to fill
     :param param_names: list of param names to fill in each config
-    :param only_none: only fill if the value is None, otherwise fill if the value is empty or None
+    :param only_none: only fill if the value is None, otherwise fill if the value is falsy
     """
     for component_config_name in config_names:
         config[component_config_name] = component_config = config.get(component_config_name) or {}
-        component_config["params"] = component_config_params = component_config.get("params") or {}
+
+        # it can be either in the config itself or under "params"
+        value_in_config = component_config.get(component_config_name)
+        value_in_params = (component_config.get("params") or {}).get(component_config_name)
 
         for key in param_names:
             if (
-                (only_none and component_config_params.get(key) is None)
-                or (not only_none and not component_config_params.get(key))
+                (only_none and value_in_config is None and value_in_params is None)
+                or (not only_none and not value_in_config and not value_in_params)
             ) and info.get(key):
-                component_config_params[key] = info[key]
+                component_config[key] = info[key]

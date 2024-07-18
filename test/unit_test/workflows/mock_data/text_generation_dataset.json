@@ -1,18 +1,11 @@
 {
-    "input_model": {
-        "type": "HfModel",
-        "config": { "model_path": "gpt2", "task": "text-generation" }
-    },
+    "input_model": { "type": "HfModel", "config": { "model_path": "gpt2", "task": "text-generation" } },
     "data_configs": [
         {
             "name": "penn_treebank_ptb_text_only",
             "type": "HuggingfaceContainer",
             "load_dataset_config": {
-                "params": {
-                    "data_name": "ptb_text_only",
-                    "subset": "penn_treebank",
-                    "split": "train"
-                }
+                "params": { "data_name": "ptb_text_only", "subset": "penn_treebank", "split": "train" }
             },
             "pre_process_data_config": {
                 "params": {

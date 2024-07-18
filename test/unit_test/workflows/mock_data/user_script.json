@@ -72,10 +72,7 @@
                         },
                         { "name": "top5", "goal": { "type": "max-degradation", "value": 0.01 } }
                     ],
-                    "user_config": {
-                        "user_script": "user_script.py",
-                        "evaluate_func": "eval_accuracy"
-                    }
+                    "user_config": { "user_script": "user_script.py", "evaluate_func": "eval_accuracy" }
                 },
                 {
                     "name": "latency",
