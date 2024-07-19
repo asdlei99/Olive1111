@@ -102,7 +102,7 @@ User should specify input model type and configuration using `input model` dicti
 - `type: [str]` Type of the input model which is case insensitive.. The supported types contain `HfModelHandler`, `PyTorchModelHandler`, `ONNXModelHandler`, `OpenVINOModelHandler`,`SNPEModelHandler` and etc. You can
 find more details in [Olive Models](https://microsoft.github.io/Olive/api/models.html).
 
-- `config: [Dict]` For example, for `HfModelHandler`, the input model config dictionary specifies following items:
+- `config: [Dict]` The configuration of the pass. Its fields can be provided directly to the parent dictionary. For example, for `HfModelHandler`, the input model config dictionary specifies following items:
 
     - `model_path: [str | Dict]` The model path can be a string or a dictionary. If it is a string, it is a huggingface hub model id or a local directory. If it is a dictionary, it contains information about the model path. Please refer to [Configuring Model Path](../tutorials/configure_model_path.md) for the more information of the model path dictionary.
 

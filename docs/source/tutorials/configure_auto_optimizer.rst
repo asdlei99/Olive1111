@@ -235,15 +235,15 @@ Here is another quick comparison between Auto Optimizer and manual settings.
                 },
                 "passes": {
                     "conversion": {
-                        "type": "OnnxConversion",
+                        "type": "OnnxConversion"
                     },
                     "cuda_transformers_optimization": {
                         "type": "OrtTransformersOptimization",
                         "float16": true
                     },
-                    "trt_transformers_optimization" {
+                    "trt_transformers_optimization": {
                         "type": "OrtTransformersOptimization",
-                        "float16": False
+                        "float16": false
                     },
                     "cuda_perf_tuning": {
                         "type": "OrtPerfTuning",
@@ -261,7 +261,7 @@ Here is another quick comparison between Auto Optimizer and manual settings.
                 },
                 "pass_flows": [
                     ["conversion", "cuda_transformers_optimization", "cuda_perf_tuning"],
-                    ["conversion", "trt_transformers_optimization", "trt_perf_tuning"],
+                    ["conversion", "trt_transformers_optimization", "trt_perf_tuning"]
                 ],
                 "search_strategy": {
                     "execution_order": "joint",

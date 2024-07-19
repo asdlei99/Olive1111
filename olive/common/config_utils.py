@@ -313,7 +313,7 @@ def validate_config(
         config_keys = set(config_dict.keys())
         unused_keys = user_keys - config_keys
         if isinstance(config, NestedConfig):
-            unused_keys -= set((config_dict.get(config._nested_field_name) or {}).keys())
+            unused_keys -= set((config_dict.get(config._nested_field_name) or {}).keys())  # pylint: disable=W0212
         if unused_keys and warn_unused_keys:
             logger.warning("Keys %s are not part of %s. Ignoring them.", unused_keys, instance_class.__name__)
     # for dynamically created class by Pydantic create_model, the classes are different even if the class names are same
