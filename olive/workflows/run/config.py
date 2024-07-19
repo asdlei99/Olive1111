@@ -279,7 +279,7 @@ class RunConfig(NestedConfig):
         v["disable_search"] = disable_search
 
         # validate first to gather config params
-        v = validate_config(v, RunPassConfig, warn_unused_keys=False).dict()
+        v = validate_config(v, RunPassConfig).dict()
 
         if not v.get("config"):
             return v
@@ -453,7 +453,7 @@ def _auto_fill_data_config(config, info, config_names, param_names, only_none=Fa
     for component_config_name in config_names:
         # validate the component config first to gather the config params
         config[component_config_name] = component_config = validate_config(
-            config.get(component_config_name) or {}, DataComponentConfig, warn_unused_keys=False
+            config.get(component_config_name) or {}, DataComponentConfig
         ).dict()
         component_config["params"] = component_config_params = component_config.get("params") or {}
 

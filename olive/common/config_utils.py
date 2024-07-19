@@ -176,7 +176,6 @@ class NestedConfig(ConfigBase):
         }
     Must ensure that there are no fields inside the `_nested_field_name` dict/class that are also defined as fields in
     this class. The fields of this class take precedence over the fields in the nested class.
-    Assumes that the class is able to handle the nested field not being present.
     """
 
     _nested_field_name: str = "config"
@@ -208,7 +207,7 @@ class NestedConfig(ConfigBase):
             else:
                 nested_field[name] = values.pop(name)
 
-        if nested_field:
+        if nested_field or cls.__fields__[cls._nested_field_name].required:
             values[cls._nested_field_name] = nested_field
         return values
 
@@ -309,8 +308,12 @@ def validate_config(
     if isinstance(config, dict):
         user_keys = set(config.keys())
         config = instance_class(**config)
-        config_keys = set(config.dict().keys())
+        # check for unused keys
+        config_dict = config.dict()
+        config_keys = set(config_dict.keys())
         unused_keys = user_keys - config_keys
+        if isinstance(config, NestedConfig):
+            unused_keys -= set((config_dict.get(config._nested_field_name) or {}).keys())
         if unused_keys and warn_unused_keys:
             logger.warning("Keys %s are not part of %s. Ignoring them.", unused_keys, instance_class.__name__)
     # for dynamically created class by Pydantic create_model, the classes are different even if the class names are same

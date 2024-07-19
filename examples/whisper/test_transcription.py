@@ -83,9 +83,7 @@ def main(raw_args=None):
     # load output model json
     output_model_json_path = Path(config["output_dir"])
     output_model_json = {}
-    for model_json in output_model_json_path.glob(
-        f"**/{config['engine']['output_name']}_{accelerator_spec}_model.json"
-    ):
+    for model_json in output_model_json_path.glob(f"**/{config['output_name']}_{accelerator_spec}_model.json"):
         with model_json.open() as f:
             output_model_json = json.load(f)
         break

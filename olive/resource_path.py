@@ -7,6 +7,7 @@ import re
 import shutil
 import tempfile
 from abc import abstractmethod
+from copy import deepcopy
 from enum import Enum
 from pathlib import Path
 from typing import Any, Callable, ClassVar, Dict, List, Optional, Type, Union
@@ -173,7 +174,8 @@ def find_all_resources(config, ignore_keys: Optional[List[str]] = None) -> Dict[
     """
     if isinstance(config, VALID_RESOURCE_CONFIGS):
         try:
-            resource_path = create_resource_path(config)
+            # don't want to accidentally modify the original config
+            resource_path = create_resource_path(deepcopy(config))
             if resource_path.is_string_name():
                 return {}
             return {(): resource_path}
