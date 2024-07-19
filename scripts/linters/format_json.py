@@ -9,6 +9,7 @@ import json
 import logging
 import os
 import sys
+from typing import List
 
 from lintrunner_adapters import LintMessage, LintSeverity
 
@@ -16,7 +17,7 @@ LINTER_CODE = "FORMAT-JSON"
 
 
 def json_dumps(obj):
-    """Modified version of json.dumps that adds spaces before and after braces and brackets.
+    """Dump json with spaces before and after braces and brackets.
 
     Cannot just find and replace the braces and brackets because the string representation of the object
     may contain braces and brackets in string content.
@@ -68,7 +69,7 @@ def format_json(passed_obj, indent: int, max_line_length: int):
     return _format_json(passed_obj, "", 0) + "\n"
 
 
-def check_file(filename: str, indent: int, max_line_length: int) -> list[LintMessage]:
+def check_file(filename: str, indent: int, max_line_length: int) -> List[LintMessage]:
     with open(filename, "rb") as f:
         original = f.read().decode("utf-8")
 

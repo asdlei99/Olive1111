@@ -448,14 +448,19 @@ def _auto_fill_data_config(config, info, config_names, param_names, only_none=Fa
     """
     for component_config_name in config_names:
         config[component_config_name] = component_config = config.get(component_config_name) or {}
-
-        # it can be either in the config itself or under "params"
-        value_in_config = component_config.get(component_config_name)
-        value_in_params = (component_config.get("params") or {}).get(component_config_name)
+        component_config["params"] = component_config_params = component_config.get("params") or {}
 
         for key in param_names:
-            if (
-                (only_none and value_in_config is None and value_in_params is None)
-                or (not only_none and not value_in_config and not value_in_params)
-            ) and info.get(key):
-                component_config[key] = info[key]
+            if info.get(key) is None:
+                continue
+
+            if component_config.get(key) or component_config_params.get(key):
+                # it could be provided in the config itself or under "params"
+                continue
+
+            if only_none and not (component_config.get(key) is None and component_config_params.get(key) is None):
+                continue
+
+            # will insert the value under "params"
+            component_config_params[key] = info[key]
+            component_config.pop(key, None)
