@@ -12,7 +12,7 @@ from olive.common.config_utils import NestedConfig, convert_configs_to_dicts, va
 from olive.common.constants import DEFAULT_HF_TASK, DEFAULT_WORKFLOW_ID
 from olive.common.pydantic_v1 import Field, root_validator, validator
 from olive.common.utils import set_nested_dict_value
-from olive.data.config import DataConfig
+from olive.data.config import DataComponentConfig, DataConfig
 from olive.data.container.dummy_data_container import TRANSFORMER_DUMMY_DATA_CONTAINER
 from olive.data.container.huggingface_container import HuggingfaceContainer
 from olive.engine import Engine, EngineConfig
@@ -277,6 +277,10 @@ class RunConfig(NestedConfig):
             disable_search = disable_search or False
 
         v["disable_search"] = disable_search
+
+        # validate first to gather config params
+        v = validate_config(v, RunPassConfig, warn_unused_keys=False).dict()
+
         if not v.get("config"):
             return v
 
@@ -447,20 +451,17 @@ def _auto_fill_data_config(config, info, config_names, param_names, only_none=Fa
     :param only_none: only fill if the value is None, otherwise fill if the value is falsy
     """
     for component_config_name in config_names:
-        config[component_config_name] = component_config = config.get(component_config_name) or {}
+        # validate the component config first to gather the config params
+        config[component_config_name] = component_config = validate_config(
+            config.get(component_config_name) or {}, DataComponentConfig, warn_unused_keys=False
+        ).dict()
         component_config["params"] = component_config_params = component_config.get("params") or {}
 
         for key in param_names:
             if info.get(key) is None:
                 continue
 
-            if component_config.get(key) or component_config_params.get(key):
-                # it could be provided in the config itself or under "params"
-                continue
-
-            if only_none and not (component_config.get(key) is None and component_config_params.get(key) is None):
-                continue
-
-            # will insert the value under "params"
-            component_config_params[key] = info[key]
-            component_config.pop(key, None)
+            if (only_none and component_config_params.get(key) is None) or (
+                not only_none and not component_config_params.get(key)
+            ):
+                component_config_params[key] = info[key]
