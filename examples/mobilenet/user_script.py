@@ -5,6 +5,7 @@
 from pathlib import Path
 
 import numpy as np
+import torch
 from onnxruntime.quantization.calibrate import CalibrationDataReader
 from torch.utils.data import DataLoader, Dataset
 
@@ -16,11 +17,11 @@ class MobileNetDataset(Dataset):
     def __init__(self, data_dir: str):
         data_dir = Path(data_dir)
         data_file = data_dir / "data.npy"
-        self.data = np.load(data_file)
+        self.data = torch.from_numpy(np.load(data_file))
         self.labels = None
         labels_file = data_dir / "labels.npy"
         if labels_file.exists():
-            self.labels = np.load(labels_file)
+            self.labels = torch.from_numpy(np.load(labels_file))
 
     def __len__(self):
         return len(self.data)
@@ -77,5 +78,5 @@ def qnn_sdk_post_process(output):
 
 
 @Registry.register_dataloader()
-def mobilenet_calibration_reader(data_dir, batch_size, *args, **kwargs):
+def mobilenet_calibration_reader(dataset, batch_size, data_dir, **kwargs):
     return MobileNetCalibrationDataReader(data_dir, batch_size=batch_size)

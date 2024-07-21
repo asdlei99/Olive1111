@@ -19,13 +19,22 @@
     },
     "data_configs": [
         {
-            "name": "cifar10_data_config",
+            "name": "latency_data_config",
             "type": "HuggingfaceContainer",
             "user_script": "user_script.py",
-            "load_dataset_config": { "type": "cifar10_dataset", "params": { "data_dir": "data" } },
+            "load_dataset_config": { "type": "cifar10_val_dataset", "params": { "data_dir": "data" } },
             "pre_process_data_config": { "type": "skip_pre_process" },
             "dataloader_config": { "params": { "batch_size": 1, "drop_last": true } },
             "post_process_data_config": { "type": "skip_post_process" }
+        },
+        {
+            "name": "quant_data_config",
+            "type": "HuggingfaceContainer",
+            "user_script": "user_script.py",
+            "load_dataset_config": { "type": "simple_dataset" },
+            "pre_process_data_config": { "type": "skip_pre_process" },
+            "post_process_data_config": { "type": "skip_post_process" },
+            "dataloader_config": { "type": "resnet_calibration_dataloader", "params": {"data_dir": "data"} }
         }
     ],
     "evaluators": {
@@ -34,7 +43,6 @@
                 {
                     "name": "accuracy",
                     "type": "custom",
-                    "data_config": "cifar10_data_config",
                     "sub_types": [
                         {
                             "name": "accuracy_custom",
@@ -46,16 +54,13 @@
                     "user_config": {
                         "user_script": "user_script.py",
                         "evaluate_func": "eval_accuracy",
-                        "evaluate_func_kwargs": {
-                            "data_dir": "data",
-                            "batch_size": 1
-                        }
+                        "evaluate_func_kwargs": { "data_dir": "data", "batch_size": 1 }
                     }
                 },
                 {
                     "name": "latency",
                     "type": "latency",
-                    "data_config": "cifar10_data_config",
+                    "data_config": "latency_data_config",
                     "sub_types": [
                         {
                             "name": "avg",
@@ -76,9 +81,7 @@
                 "quant_format": "QDQ",
                 "activation_type": "QUInt8",
                 "weight_type": "QInt8",
-                "user_script": "user_script.py",
-                "data_dir": "data",
-                "dataloader_func": "resnet_calibration_reader"
+                "data_config": "quant_data_config"
             }
         }
     },
