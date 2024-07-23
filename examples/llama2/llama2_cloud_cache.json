@@ -1,0 +1,70 @@
+{
+    "input_model":{
+        "type": "PyTorchModel",
+        "config": {
+            "hf_config": {
+                "model_name": "meta-llama/Llama-2-7b-hf",
+                "model_class": "LlamaForCausalLM",
+                "task": "text-generation"
+            }
+        }
+    },
+    "systems": {
+        "aml_system": {
+            "type": "AMLSystem",
+            "config": {
+                "name": "aml_compute",
+                "accelerators": [
+                    {   
+                        "device": "gpu",
+                        "execution_providers": [
+                            "CUDAExecutionProvider"
+                        ]
+                    }
+                ]
+            }
+        }
+    },
+    "passes": {
+        "conversion": {
+            "type": "OnnxConversion",
+            "config": {
+                "target_opset": 17,
+                "save_as_external_data": true,
+                "all_tensors_to_one_file": true,
+                "torch_dtype": "float32"
+            }
+        },
+        "transformers_optimization": {
+            "type": "OrtTransformersOptimization",
+            "config": {
+                "save_as_external_data": true,
+                "all_tensors_to_one_file": true,
+                "model_type": "gpt2",
+                "opt_level": 0,
+                "only_onnxruntime": false,
+                "keep_io_types": false,
+                "float16": true,
+                "optimization_options": {
+                    "enable_rotary_embeddings": false
+                }
+            }
+        },
+        "bnb_quantization": {
+            "type": "OnnxBnb4Quantization",
+            "config": {
+                "host": "aml_system",
+                "quant_type": "fp4",
+                "save_as_external_data": true,
+                "all_tensors_to_one_file": true
+            }
+        }
+    },
+    "engine": {
+        "host": "aml_system",
+        "target": "aml_sysem",
+        "cache_dir": "cache",
+        "output_dir" : "models/llama2",
+        "cloud_cache_config": true
+    }
+}

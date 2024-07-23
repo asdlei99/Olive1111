@@ -572,6 +572,7 @@ class IncQuantization(Pass):
         if run_config.get("diagnosis", False):
             assert inc_calib_dataloader is not None, "diagnosis mode requires dataloader"
 
+        print(f"model path is {model.model_path}")
         q_model = quantization.fit(
             model.model_path, ptq_config, calib_dataloader=inc_calib_dataloader, eval_func=eval_func
         )

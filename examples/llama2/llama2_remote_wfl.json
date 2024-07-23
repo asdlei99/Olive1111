@@ -116,10 +116,11 @@
                 "algorithm": "AWQ",
                 "group_size": 32
             },
-            "data_config": "tiny_codes_train",
+            "dataloader_func": "calib_dataloader",
             "calibration_sampling_size": [8],
             "save_as_external_data": true,
-            "all_tensors_to_one_file": true
+            "all_tensors_to_one_file": true,
+            "user_script": "user_script.py"
         }
     },
     "evaluator": "merged_evaluator",
