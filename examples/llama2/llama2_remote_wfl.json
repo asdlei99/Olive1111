@@ -101,9 +101,7 @@
             "type": "OnnxConversion",
             "target_opset": 17,
             "save_as_external_data": true,
-            "all_tensors_to_one_file": true,
-            "torch_dtype": "float32",
-            "save_metadata_for_token_generation": true
+            "all_tensors_to_one_file": true
         },
         "quantize": {
             "type": "IncStaticQuantization",
